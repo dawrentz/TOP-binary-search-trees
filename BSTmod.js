@@ -16,7 +16,7 @@ function Node(data, left = null, right = null) {
   };
 }
 
-class Tree {
+export class Tree {
   constructor(arr) {
     // this.arr = arr;
     //run formatting once before build
@@ -251,6 +251,26 @@ class Tree {
     if (!node.left) return node.data;
     return this.findSmallestVal(node.left);
   }
+
+  rebalance() {
+    const allValuesArr = this.grabAllValues();
+    this.root = buildTree(formatArr(allValuesArr));
+  }
+
+  //reusing leverOrder
+  grabAllValues(allValues = [], queue = [this.root]) {
+    //base case
+    if (queue.length === 0) return allValues;
+
+    //grab first and shift que for recursion
+    const currentNode = queue.shift();
+
+    //collect value, add to queue (if needed), and recursion
+    allValues.push(currentNode.data);
+    if (currentNode.left) queue.push(currentNode.left);
+    if (currentNode.right) queue.push(currentNode.right);
+    return this.grabAllValues(allValues, queue);
+  }
 }
 
 function buildTree(arr) {
@@ -306,7 +326,7 @@ function removeDuplicates(arr) {
   return formatArr;
 }
 
-const prettyPrint = (node, prefix = "", isLeft = true) => {
+export const prettyPrint = (node, prefix = "", isLeft = true) => {
   if (node === null) {
     return;
   }
@@ -320,56 +340,3 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
 };
 
 // ========================================== testing ========================================== //
-
-console.log("=============== new ================");
-
-const testArr = [
-  1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  11, 22, 33, 44, 55, 66, 77, 88, 99, 111, 222, 333, 444, 555, 666, 777, 888,
-  999, 1000,
-];
-// const testArr = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
-const testTree = new Tree(testArr);
-
-console.log("=============== prettyPrint ================");
-prettyPrint(testTree.root);
-
-console.log("=============== insert (123) ================");
-testTree.insert(123);
-prettyPrint(testTree.root);
-testTree.insert(124);
-testTree.insert(125);
-testTree.insert(126);
-testTree.insert(127);
-testTree.insert(128);
-testTree.insert(129);
-testTree.insert(130);
-
-console.log("=============== delete (123) ================");
-testTree.deleteItem(123);
-prettyPrint(testTree.root);
-
-console.log("=============== find (1) ================");
-console.log(testTree.find(1));
-
-console.log("=============== levelOrder(console log data) ================");
-function testCB(node) {
-  console.log(node.data);
-}
-testTree.levelOrder(testCB);
-
-console.log("=============== inOrder(console log data) ================");
-testTree.inOrder(testCB);
-console.log("=============== preOrder(console log data) ================");
-testTree.preOrder(testCB);
-console.log("=============== postOrder(console log data) ================");
-testTree.postOrder(testCB);
-
-console.log("=============== height (67) ================");
-console.log(testTree.height(67));
-
-console.log("=============== depth(23) ================");
-console.log(testTree.depth(23));
-
-console.log("=============== isBalanced ================");
-console.log(testTree.isBalanced());
