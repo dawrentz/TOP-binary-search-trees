@@ -133,6 +133,25 @@ class Tree {
     if (value > node.data) return this.find(value, node.right);
   }
 
+  levelOrder(callback, queue = [this.root]) {
+    //error handle
+    if (!callback) {
+      throw new Error(
+        "levelOrder() method requires a callback function argument"
+      );
+    }
+    //base case
+    if (queue.length === 0) return;
+
+    //grab first and shift que for recursion
+    const currentNode = queue.shift();
+
+    callback(currentNode);
+    if (currentNode.left) queue.push(currentNode.left);
+    if (currentNode.right) queue.push(currentNode.right);
+    return this.levelOrder(callback, queue);
+  }
+
   findSmallestVal(node = this.root) {
     if (node.left === null) return node.data;
     return this.findSmallestVal(node.left);
@@ -218,4 +237,11 @@ prettyPrint(testTree.root);
 testTree.deleteItem(8);
 prettyPrint(testTree.root);
 
-console.log(testTree.find(9));
+console.log(testTree.find(1));
+
+testTree.levelOrder(testCB);
+
+function testCB(node) {
+  console.log("from CB");
+  console.log(node.data);
+}
