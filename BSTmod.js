@@ -146,10 +146,59 @@ class Tree {
     //grab first and shift que for recursion
     const currentNode = queue.shift();
 
+    //run callback, add to queue (if needed), and recursion
     callback(currentNode);
     if (currentNode.left) queue.push(currentNode.left);
     if (currentNode.right) queue.push(currentNode.right);
     return this.levelOrder(callback, queue);
+  }
+
+  //left, root, right = inOrder
+  inOrder(callback) {
+    this.orderCall(callback, "in");
+  }
+
+  //root, left, right = preOrder
+  preOrder(callback) {
+    this.orderCall(callback, "pre");
+  }
+
+  //left, right, root = postOrder
+  postOrder(callback) {
+    this.orderCall(callback, "post");
+  }
+
+  orderCall(callback, type, node = this.root) {
+    //error handle
+    if (!callback) {
+      throw new Error(
+        "levelOrder() method requires a callback function argument"
+      );
+    }
+
+    //root, left, right = preOrder
+    if (type === "pre") {
+      callback(node);
+      if (node.left) this.orderCall(callback, "pre", node.left);
+      if (node.right) this.orderCall(callback, "pre", node.right);
+      return;
+    }
+
+    //left, root, right = inOrder
+    if (type === "in") {
+      if (node.left) this.orderCall(callback, "in", node.left);
+      callback(node);
+      if (node.right) this.orderCall(callback, "in", node.right);
+      return;
+    }
+
+    //left, right, root = postOrder
+    if (type === "post") {
+      if (node.left) this.orderCall(callback, "post", node.left);
+      if (node.right) this.orderCall(callback, "post", node.right);
+      callback(node);
+      return;
+    }
   }
 
   findSmallestVal(node = this.root) {
@@ -173,21 +222,21 @@ function buildTree(arr) {
   const root = Node(rootValue, leftNode, rightNode);
 
   //test
-  console.log("===============================");
-  console.log("origArr");
-  console.log(arr);
-  console.log("arr");
-  console.log(arr);
-  console.log("midValue");
-  console.log(arr[midIndex]);
-  console.log("leftArr");
-  console.log(arr.slice(0, midIndex));
-  console.log("rightArr");
-  console.log(arr.slice(midIndex + 1, arr.length));
-  console.log("leftNode");
-  console.log(leftNode);
-  console.log("rightNode");
-  console.log(rightNode);
+  // console.log("===============================");
+  // console.log("origArr");
+  // console.log(arr);
+  // console.log("arr");
+  // console.log(arr);
+  // console.log("midValue");
+  // console.log(arr[midIndex]);
+  // console.log("leftArr");
+  // console.log(arr.slice(0, midIndex));
+  // console.log("rightArr");
+  // console.log(arr.slice(midIndex + 1, arr.length));
+  // console.log("leftNode");
+  // console.log(leftNode);
+  // console.log("rightNode");
+  // console.log(rightNode);
 
   return root;
 }
@@ -228,20 +277,28 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
 
 console.log("=============== new ================");
 
-console.log("=============== x ================");
 const testArr = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
 const testTree = new Tree(testArr);
 
+console.log("=============== prettyPrint ================");
 prettyPrint(testTree.root);
 
+console.log("=============== delete (8) ================");
 testTree.deleteItem(8);
 prettyPrint(testTree.root);
 
+console.log("=============== find (1) ================");
 console.log(testTree.find(1));
 
-testTree.levelOrder(testCB);
-
+console.log("=============== levelOrder(console log data) ================");
 function testCB(node) {
-  console.log("from CB");
   console.log(node.data);
 }
+testTree.levelOrder(testCB);
+
+console.log("=============== inOrder(console log data) ================");
+testTree.inOrder(testCB);
+console.log("=============== preOrder(console log data) ================");
+testTree.preOrder(testCB);
+console.log("=============== postOrder(console log data) ================");
+testTree.postOrder(testCB);
