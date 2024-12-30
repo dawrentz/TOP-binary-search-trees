@@ -136,9 +136,7 @@ class Tree {
   levelOrder(callback, queue = [this.root]) {
     //error handle
     if (!callback) {
-      throw new Error(
-        "levelOrder() method requires a callback function argument"
-      );
+      throw new Error("Method requires a callback function argument");
     }
     //base case
     if (queue.length === 0) return;
@@ -153,17 +151,17 @@ class Tree {
     return this.levelOrder(callback, queue);
   }
 
-  //left, root, right = inOrder
+  //inOrder = left, root, right
   inOrder(callback) {
     this.orderCall(callback, "in");
   }
 
-  //root, left, right = preOrder
+  //preOrder = root, left, right
   preOrder(callback) {
     this.orderCall(callback, "pre");
   }
 
-  //left, right, root = postOrder
+  //postOrder = left, right, root
   postOrder(callback) {
     this.orderCall(callback, "post");
   }
@@ -171,12 +169,10 @@ class Tree {
   orderCall(callback, type, node = this.root) {
     //error handle
     if (!callback) {
-      throw new Error(
-        "levelOrder() method requires a callback function argument"
-      );
+      throw new Error("Method requires a callback function argument");
     }
 
-    //root, left, right = preOrder
+    //preOrder = root, left, right
     if (type === "pre") {
       callback(node);
       if (node.left) this.orderCall(callback, "pre", node.left);
@@ -184,7 +180,7 @@ class Tree {
       return;
     }
 
-    //left, root, right = inOrder
+    //inOrder = left, root, right
     if (type === "in") {
       if (node.left) this.orderCall(callback, "in", node.left);
       callback(node);
@@ -192,7 +188,7 @@ class Tree {
       return;
     }
 
-    //left, right, root = postOrder
+    //postOrder = left, right, root
     if (type === "post") {
       if (node.left) this.orderCall(callback, "post", node.left);
       if (node.right) this.orderCall(callback, "post", node.right);
@@ -201,8 +197,58 @@ class Tree {
     }
   }
 
+  height(dataValue) {
+    const node = this.find(dataValue);
+    return this.countEdgesHeight(node);
+  }
+
+  //return # of edges along longest path to a leaf
+  //did not think I'd be able to figure that out
+  countEdgesHeight(node) {
+    let edgeCount = 0;
+    let leftEdgeCount = 0;
+    let rightEdgeCount = 0;
+
+    //no need base-case/return 0 because edgeCount is init to 0.
+    //If node is null, then no recursion, and edgeCount remains as 0 and is returned/passed up to the prev left/right edge count
+    //If node is not null, repeat down to null node, counting with "1 + " along the way
+    if (node.left) leftEdgeCount = 1 + this.countEdgesHeight(node.left);
+    if (node.right) rightEdgeCount = 1 + this.countEdgesHeight(node.right);
+
+    //return the larger sub-path
+    //recursion is upside down, start at all the leafs, go up one node, compare left/right path sizes, repeat up to start point
+    if (leftEdgeCount >= rightEdgeCount) edgeCount += leftEdgeCount;
+    else edgeCount += rightEdgeCount;
+
+    return edgeCount;
+  }
+
+  //return # of edges to root
+  depth(dataValue, node = this.root, counter = 0) {
+    //if searchValue is not in this node, update counter and move to next appropriate node
+    if (dataValue !== node.data) {
+      if (dataValue < node.data)
+        return this.depth(dataValue, node.left, ++counter);
+      if (dataValue > node.data)
+        return this.depth(dataValue, node.right, ++counter);
+    }
+
+    //else, value is found, return counter
+    else return counter;
+  }
+
+  isBalanced() {
+    //my height() accepts a value, not a node
+    const leftHeight = this.height(this.root.left.data);
+    const rightHeight = this.height(this.root.right.data);
+    const diffHeight = Math.abs(leftHeight - rightHeight);
+
+    if (diffHeight <= 1) return true;
+    else return false;
+  }
+
   findSmallestVal(node = this.root) {
-    if (node.left === null) return node.data;
+    if (!node.left) return node.data;
     return this.findSmallestVal(node.left);
   }
 }
@@ -277,14 +323,30 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
 
 console.log("=============== new ================");
 
-const testArr = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
+const testArr = [
+  1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+  11, 22, 33, 44, 55, 66, 77, 88, 99, 111, 222, 333, 444, 555, 666, 777, 888,
+  999, 1000,
+];
+// const testArr = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
 const testTree = new Tree(testArr);
 
 console.log("=============== prettyPrint ================");
 prettyPrint(testTree.root);
 
-console.log("=============== delete (8) ================");
-testTree.deleteItem(8);
+console.log("=============== insert (123) ================");
+testTree.insert(123);
+prettyPrint(testTree.root);
+testTree.insert(124);
+testTree.insert(125);
+testTree.insert(126);
+testTree.insert(127);
+testTree.insert(128);
+testTree.insert(129);
+testTree.insert(130);
+
+console.log("=============== delete (123) ================");
+testTree.deleteItem(123);
 prettyPrint(testTree.root);
 
 console.log("=============== find (1) ================");
@@ -302,3 +364,12 @@ console.log("=============== preOrder(console log data) ================");
 testTree.preOrder(testCB);
 console.log("=============== postOrder(console log data) ================");
 testTree.postOrder(testCB);
+
+console.log("=============== height (67) ================");
+console.log(testTree.height(67));
+
+console.log("=============== depth(23) ================");
+console.log(testTree.depth(23));
+
+console.log("=============== isBalanced ================");
+console.log(testTree.isBalanced());
