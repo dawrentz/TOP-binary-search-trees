@@ -4,16 +4,22 @@ import * as BTSmod from "./BSTmod.js";
 
 // ========================================== init ========================================== //
 
+console.clear();
+
+// ========================================== functions ========================================== //
+
 function makeRandArr(size) {
   let randArr = [];
   for (let i = 0; i < size; i++) {
-    const randNum = Math.floor(Math.random() * 101);
+    //# 1 - 100
+    const randNum = Math.ceil(Math.random() * 100);
     randArr.push(randNum);
   }
 
   return randArr;
 }
 
+//callback for method call
 function testCB(node) {
   console.log(node.data);
 }
@@ -21,7 +27,8 @@ function testCB(node) {
 // ========================================== testing ========================================== //
 
 console.log("=============== testArr ================");
-const testArr = makeRandArr(7);
+// const testArr = makeRandArr(7);
+const testArr = [87, 76, 79, 64, 77, 33, 28];
 console.log(testArr);
 
 const testTree = new BTSmod.Tree(testArr);

@@ -4,8 +4,6 @@ import * as mergSortMod from "./mergSort.js";
 
 // ========================================== init ========================================== //
 
-console.clear();
-
 // ========================================== Major Funcs ========================================== //
 
 function Node(data, left = null, right = null) {
@@ -18,8 +16,7 @@ function Node(data, left = null, right = null) {
 
 export class Tree {
   constructor(arr) {
-    // this.arr = arr;
-    //run formatting once before build
+    //format arr once before build
     this.root = buildTree(formatArr(arr));
   }
 
@@ -29,24 +26,20 @@ export class Tree {
     if (value === node.data) return;
 
     //left insert
-    if (value < node.data && node.left === null) {
+    if (value < node.data && !node.left) {
       node.left = Node(value);
       return;
     }
     //right insert
-    if (value > node.data && node.right === null) {
+    if (value > node.data && !node.right) {
       node.right = Node(value);
       return;
     }
 
     //left continue
-    if (value < node.data && node.left !== null) {
-      this.insert(value, node.left);
-    }
+    if (value < node.data) this.insert(value, node.left);
     //right continue
-    if (value > node.data && node.right !== null) {
-      this.insert(value, node.right);
-    }
+    if (value > node.data) this.insert(value, node.right);
   }
 
   deleteItem(value, node = this.root, prevNode = null) {
@@ -94,34 +87,31 @@ export class Tree {
           return;
         }
       }
-      //no match handled by continue
+      //no match handled by continue cases
     }
 
     //case: is branch
     if (node.left !== null && node.right !== null) {
-      //sub-case: match, replace value with next-greatest (delete that leaf)
+      //sub-case: match, replace value with next-greatest (and delete that leaf)
       if (value === node.data) {
-        //next greatest vaue is the smallest of the right-sub-tree
+        //next greatest value is the least of the right-sub-tree
         const nextGreatestVal = this.findSmallestVal(node.right);
-        //value is only either a leaf or has one child, and both are handled by the above cases
+        //nextGreatestVal is only either a leaf or has one child, and both are handled by the above cases. Delete it
         this.deleteItem(nextGreatestVal);
-        //update node after the deletion, lest the updated value be the one deleted, creating an infinite loop of branch deletion
+        //update node after the deletion, lest the updated value be the one deleted (matches the nextGreatestVal), creating an stack overflow
         node.data = nextGreatestVal;
         return;
       }
-      //no match handled by continue
+      //no match handled by continue cases
     }
 
     //left continue
-    if (value < node.data) {
-      this.deleteItem(value, node.left, node);
-    }
+    if (value < node.data) this.deleteItem(value, node.left, node);
     //right continue
-    if (value > node.data) {
-      this.deleteItem(value, node.right, node);
-    }
+    if (value > node.data) this.deleteItem(value, node.right, node);
   }
 
+  //returns node of matching value, if exists
   find(value, node = this.root) {
     //if value not in tree
     if (node === null) return null;
@@ -135,9 +125,8 @@ export class Tree {
 
   levelOrder(callback, queue = [this.root]) {
     //error handle
-    if (!callback) {
+    if (!callback)
       throw new Error("Method requires a callback function argument");
-    }
     //base case
     if (queue.length === 0) return;
 
@@ -177,7 +166,6 @@ export class Tree {
       callback(node);
       if (node.left) this.orderCall(callback, "pre", node.left);
       if (node.right) this.orderCall(callback, "pre", node.right);
-      return;
     }
 
     //inOrder = left, root, right
@@ -185,7 +173,6 @@ export class Tree {
       if (node.left) this.orderCall(callback, "in", node.left);
       callback(node);
       if (node.right) this.orderCall(callback, "in", node.right);
-      return;
     }
 
     //postOrder = left, right, root
@@ -193,17 +180,17 @@ export class Tree {
       if (node.left) this.orderCall(callback, "post", node.left);
       if (node.right) this.orderCall(callback, "post", node.right);
       callback(node);
-      return;
     }
   }
 
+  //wanted to input a value, not a node
   height(dataValue) {
     const node = this.find(dataValue);
     return this.countEdgesHeight(node);
   }
 
   //return # of edges along longest path to a leaf
-  //did not think I'd be able to figure that out
+  //did not think I'd be able to figure that one out
   countEdgesHeight(node) {
     let edgeCount = 0;
     let leftEdgeCount = 0;
@@ -216,7 +203,7 @@ export class Tree {
     if (node.right) rightEdgeCount = 1 + this.countEdgesHeight(node.right);
 
     //return the larger sub-path
-    //recursion is upside down, start at all the leafs, go up one node, compare left/right path sizes, repeat up to start point
+    //recursion is upside down; start at all the leafs, go up one node, compare left/right path sizes, repeat up to start point
     if (leftEdgeCount >= rightEdgeCount) edgeCount += leftEdgeCount;
     else edgeCount += rightEdgeCount;
 
@@ -238,26 +225,31 @@ export class Tree {
   }
 
   isBalanced() {
-    //my height() accepts a value, not a node
+    //this height() accepts a value, not a node
     const leftHeight = this.height(this.root.left.data);
     const rightHeight = this.height(this.root.right.data);
     const diffHeight = Math.abs(leftHeight - rightHeight);
 
     if (diffHeight <= 1) return true;
+    //else, isnt needed, but sometimes I like to be descriptive
     else return false;
   }
 
+  //for delete()
   findSmallestVal(node = this.root) {
     if (!node.left) return node.data;
     return this.findSmallestVal(node.left);
   }
 
+  //rebuild entire tree
   rebalance() {
     const allValuesArr = this.grabAllValues();
     this.root = buildTree(formatArr(allValuesArr));
   }
 
   //reusing leverOrder
+  //there's probably a better way, but I don't care
+  //use something like array[0] and array[1...length]
   grabAllValues(allValues = [], queue = [this.root]) {
     //base case
     if (queue.length === 0) return allValues;
@@ -286,23 +278,6 @@ function buildTree(arr) {
   const leftNode = buildTree(leftArr);
   const rightNode = buildTree(rightArr);
   const root = Node(rootValue, leftNode, rightNode);
-
-  //test
-  // console.log("===============================");
-  // console.log("origArr");
-  // console.log(arr);
-  // console.log("arr");
-  // console.log(arr);
-  // console.log("midValue");
-  // console.log(arr[midIndex]);
-  // console.log("leftArr");
-  // console.log(arr.slice(0, midIndex));
-  // console.log("rightArr");
-  // console.log(arr.slice(midIndex + 1, arr.length));
-  // console.log("leftNode");
-  // console.log(leftNode);
-  // console.log("rightNode");
-  // console.log(rightNode);
 
   return root;
 }
